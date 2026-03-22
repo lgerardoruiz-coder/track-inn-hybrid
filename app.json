@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Track INN Hybrid",
+    "slug": "track-inn-hybrid",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1D1D1D"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "permissions": [
+        "CAMERA",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_CONNECT",
+        "BLUETOOTH_SCAN",
+        "ACCESS_FINE_LOCATION",
+        "VIBRATE"
+      ],
+      "package": "com.trackinn.hybrid"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
