@@ -5,7 +5,8 @@ import { WebView } from 'react-native-webview';
 import NativeScanner from './NativeScanner';
 import * as Printer from './phomemoPrinter';
 
-const TRACK_INN_URL = 'https://lgerardoruiz-coder.github.io/track-inn/';
+// Cache-bust: append timestamp so WebView always fetches fresh HTML
+const TRACK_INN_URL = 'https://lgerardoruiz-coder.github.io/track-inn/?v=' + Date.now();
 
 export default function App() {
   const [showScanner, setShowScanner] = useState(false);
@@ -56,6 +57,13 @@ export default function App() {
       if (window.__HYBRID_INJECTED__) return;
       window.__HYBRID_INJECTED__ = true;
       window.__TRACK_INN_HYBRID__ = true;
+
+      // Force Service Worker update on every load
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(reg) { reg.update(); });
+        });
+      }
 
       function setup() {
         if (!window.goToScreen) return;
@@ -360,7 +368,8 @@ export default function App() {
           injectedJavaScript={injectedJS}
           originWhitelist={['*']}
           mixedContentMode="always"
-          cacheEnabled={true}
+          cacheEnabled={false}
+          cacheMode="LOAD_NO_CACHE"
           setSupportMultipleWindows={false}
         />
       </View>
