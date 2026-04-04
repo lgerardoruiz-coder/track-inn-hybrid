@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Track INN Hybrid",
+    "name": "Track Inn H",
     "slug": "track-inn-hybrid",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,9 +12,22 @@
       "backgroundColor": "#1D1D1D"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": "./assets/ios-icon.png",
+      "bundleIdentifier": "com.trackinn.hybrid",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Track INN necesita acceso a la cámara para escanear códigos de barras",
+        "NSBluetoothAlwaysUsageDescription": "Track INN usa Bluetooth para conectar con la impresora Phomemo",
+        "NSBluetoothPeripheralUsageDescription": "Track INN usa Bluetooth para conectar con la impresora Phomemo",
+        "NSLocationWhenInUseUsageDescription": "Track INN usa tu ubicación para detectar automáticamente la tienda"
+      }
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
       "permissions": [
         "CAMERA",
         "BLUETOOTH",
@@ -28,6 +41,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fd904686-57fe-4f39-baee-2ba22b92d38e"
+      }
+    },
+    "owner": "gerardoruiz89"
   }
 }
