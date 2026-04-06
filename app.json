@@ -6,9 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "plugins": [
-      "./modules/mlkit-scanner"
-    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
