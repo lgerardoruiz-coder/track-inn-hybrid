@@ -126,6 +126,14 @@ export default function App() {
           if (window.batchLookupCode) window.batchLookupCode(rowId);
         });
 
+        document.addEventListener('nativeQueueScan', function(e) {
+          var rowId = e.detail.rowId;
+          var code = e.detail.code;
+          var input = document.getElementById('queueInput' + rowId);
+          if (input) input.value = code;
+          if (window.queueLookupCode) window.queueLookupCode(rowId);
+        });
+
         document.addEventListener('nativeScannerClosed', function() {
           var backTo = window.__preScanner__;
           if (backTo !== undefined && backTo !== null) {
@@ -321,6 +329,14 @@ export default function App() {
         // Batch scan — send to specific row
         webViewRef.current.injectJavaScript(`
           document.dispatchEvent(new CustomEvent('nativeBatchScan', {
+            detail: { rowId: ${batchTargetId}, code: '${escaped}' }
+          }));
+          true;
+        `);
+      } else if (scannerMode === 'queue' && batchTargetId) {
+        // Queue scan — send to queue row
+        webViewRef.current.injectJavaScript(`
+          document.dispatchEvent(new CustomEvent('nativeQueueScan', {
             detail: { rowId: ${batchTargetId}, code: '${escaped}' }
           }));
           true;
