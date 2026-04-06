@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
   s.license        = { :type => 'MIT' }
   s.author         = 'Gerardo Ruiz'
   s.source         = { :git => '' }
-  s.platform       = :ios, '15.1'
+  s.platform       = :ios, '16.0'
   s.swift_version  = '5.4'
   s.source_files   = '**/*.swift'
 

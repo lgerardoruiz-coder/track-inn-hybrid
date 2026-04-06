@@ -8,9 +8,10 @@ class MLKitScannerView: ExpoView, AVCaptureVideoDataOutputSampleBufferDelegate {
   // MARK: - Properties
 
   private let captureSession = AVCaptureSession()
-  private let previewLayer = AVCaptureVideoPreviewLayer()
+  private var previewLayer: AVCaptureVideoPreviewLayer?
   private var barcodeScanner: BarcodeScanner?
   private var isProcessing = false
+  private var cameraStarted = false
   private let sessionQueue = DispatchQueue(label: "com.trackinn.mlkit.session")
   private let processingQueue = DispatchQueue(label: "com.trackinn.mlkit.processing")
 
@@ -22,19 +23,24 @@ class MLKitScannerView: ExpoView, AVCaptureVideoDataOutputSampleBufferDelegate {
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
     setupScanner(types: [.EAN13, .EAN8, .UPCA, .UPCE, .code128, .code39, .code93, .ITF, .codaBar, .dataMatrix, .qrCode])
-    setupCamera()
+  }
+
+  override func didMoveToWindow() {
+    super.didMoveToWindow()
+    if window != nil && !cameraStarted {
+      cameraStarted = true
+      setupCamera()
+    } else if window == nil {
+      sessionQueue.async { [weak self] in
+        self?.captureSession.stopRunning()
+      }
+      cameraStarted = false
+    }
   }
 
   override func layoutSubviews() {
     super.layoutSubviews()
-    previewLayer.frame = bounds
-  }
-
-  override func removeFromSuperview() {
-    super.removeFromSuperview()
-    sessionQueue.async { [weak self] in
-      self?.captureSession.stopRunning()
-    }
+    previewLayer?.frame = bounds
   }
 
   // MARK: - Configuration
@@ -58,10 +64,6 @@ class MLKitScannerView: ExpoView, AVCaptureVideoDataOutputSampleBufferDelegate {
   // MARK: - Camera Setup
 
   private func setupCamera() {
-    previewLayer.session = captureSession
-    previewLayer.videoGravity = .resizeAspectFill
-    layer.addSublayer(previewLayer)
-
     sessionQueue.async { [weak self] in
       guard let self = self else { return }
 
@@ -80,6 +82,15 @@ class MLKitScannerView: ExpoView, AVCaptureVideoDataOutputSampleBufferDelegate {
 
       if self.captureSession.canAddOutput(output) {
         self.captureSession.addOutput(output)
+      }
+
+      // Create preview layer with session on main thread
+      DispatchQueue.main.async {
+        let preview = AVCaptureVideoPreviewLayer(session: self.captureSession)
+        preview.videoGravity = .resizeAspectFill
+        preview.frame = self.bounds
+        self.layer.addSublayer(preview)
+        self.previewLayer = preview
       }
 
       self.captureSession.startRunning()
