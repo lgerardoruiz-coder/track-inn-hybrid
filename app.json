@@ -49,6 +49,16 @@
         "projectId": "fd904686-57fe-4f39-baee-2ba22b92d38e"
       }
     },
-    "owner": "gerardoruiz89"
+    "owner": "gerardoruiz89",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
+        }
+      ]
+    ]
   }
 }
