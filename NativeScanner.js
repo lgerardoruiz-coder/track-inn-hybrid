@@ -8,7 +8,11 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 
 let MLKitScannerView = null;
 if (Platform.OS === 'ios') {
-  MLKitScannerView = require('./modules/mlkit-scanner').MLKitScannerView;
+  try {
+    MLKitScannerView = require('./modules/mlkit-scanner').MLKitScannerView;
+  } catch (e) {
+    console.warn('MLKitScanner not available, falling back to expo-camera:', e.message);
+  }
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
