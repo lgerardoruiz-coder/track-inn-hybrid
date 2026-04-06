@@ -6,6 +6,11 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
+let MLKitScannerView = null;
+if (Platform.OS === 'ios') {
+  MLKitScannerView = require('./modules/mlkit-scanner').MLKitScannerView;
+}
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function NativeScanner({ onScan, onClose }) {
@@ -125,18 +130,32 @@ export default function NativeScanner({ onScan, onClose }) {
           {/* Camera — shrink when keyboard is visible */}
           {!keyboardVisible ? (
             <View style={styles.cameraContainer}>
-              <CameraView
-                style={styles.camera}
-                facing="back"
-                barcodeScannerSettings={{
-                  barcodeTypes: [
+              {Platform.OS === 'ios' && MLKitScannerView ? (
+                <MLKitScannerView
+                  style={styles.camera}
+                  barcodeTypes={[
                     'ean13', 'ean8', 'upc_a', 'upc_e',
                     'code128', 'code39', 'code93',
                     'itf14', 'codabar', 'datamatrix', 'qr',
-                  ],
-                }}
-                onBarcodeScanned={canScan ? handleBarcodeScanned : undefined}
-              />
+                  ]}
+                  onBarcodeScanned={canScan ? (event) => {
+                    handleBarcodeScanned(event.nativeEvent);
+                  } : undefined}
+                />
+              ) : (
+                <CameraView
+                  style={styles.camera}
+                  facing="back"
+                  barcodeScannerSettings={{
+                    barcodeTypes: [
+                      'ean13', 'ean8', 'upc_a', 'upc_e',
+                      'code128', 'code39', 'code93',
+                      'itf14', 'codabar', 'datamatrix', 'qr',
+                    ],
+                  }}
+                  onBarcodeScanned={canScan ? handleBarcodeScanned : undefined}
+                />
+              )}
               <View style={styles.overlay}>
                 <View style={[styles.corner, styles.cornerTL]} />
                 <View style={[styles.corner, styles.cornerTR]} />

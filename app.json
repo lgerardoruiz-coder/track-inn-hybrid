@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "plugins": [
+      "./modules/mlkit-scanner"
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,11 +18,13 @@
       "supportsTablet": true,
       "icon": "./assets/ios-icon.png",
       "bundleIdentifier": "com.trackinn.hybrid",
+      "appleTeamId": "QQDUUMXXR6",
       "infoPlist": {
         "NSCameraUsageDescription": "Track INN necesita acceso a la cámara para escanear códigos de barras",
         "NSBluetoothAlwaysUsageDescription": "Track INN usa Bluetooth para conectar con la impresora Phomemo",
         "NSBluetoothPeripheralUsageDescription": "Track INN usa Bluetooth para conectar con la impresora Phomemo",
-        "NSLocationWhenInUseUsageDescription": "Track INN usa tu ubicación para detectar automáticamente la tienda"
+        "NSLocationWhenInUseUsageDescription": "Track INN usa tu ubicación para detectar automáticamente la tienda",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
