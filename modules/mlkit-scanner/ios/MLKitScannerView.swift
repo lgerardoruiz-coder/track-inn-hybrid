@@ -12,6 +12,7 @@ class MLKitScannerView: ExpoView, AVCaptureVideoDataOutputSampleBufferDelegate {
   private var barcodeScanner: BarcodeScanner?
   private var isProcessing = false
   private var cameraStarted = false
+  private var cameraConfigured = false
   private let sessionQueue = DispatchQueue(label: "com.trackinn.mlkit.session")
   private let processingQueue = DispatchQueue(label: "com.trackinn.mlkit.processing")
 
@@ -30,11 +31,11 @@ class MLKitScannerView: ExpoView, AVCaptureVideoDataOutputSampleBufferDelegate {
     if window != nil && !cameraStarted {
       cameraStarted = true
       setupCamera()
-    } else if window == nil {
+    } else if window == nil && cameraStarted {
+      cameraStarted = false
       sessionQueue.async { [weak self] in
         self?.captureSession.stopRunning()
       }
-      cameraStarted = false
     }
   }
 
@@ -67,33 +68,45 @@ class MLKitScannerView: ExpoView, AVCaptureVideoDataOutputSampleBufferDelegate {
     sessionQueue.async { [weak self] in
       guard let self = self else { return }
 
-      guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-            let input = try? AVCaptureDeviceInput(device: device) else {
-        return
+      // Only configure inputs/outputs once
+      if !self.cameraConfigured {
+        self.cameraConfigured = true
+
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+              let input = try? AVCaptureDeviceInput(device: device) else {
+          return
+        }
+
+        if self.captureSession.canAddInput(input) {
+          self.captureSession.addInput(input)
+        }
+
+        let output = AVCaptureVideoDataOutput()
+        output.setSampleBufferDelegate(self, queue: self.processingQueue)
+        output.alwaysDiscardsLateVideoFrames = true
+
+        if self.captureSession.canAddOutput(output) {
+          self.captureSession.addOutput(output)
+        }
       }
 
-      if self.captureSession.canAddInput(input) {
-        self.captureSession.addInput(input)
-      }
-
-      let output = AVCaptureVideoDataOutput()
-      output.setSampleBufferDelegate(self, queue: self.processingQueue)
-      output.alwaysDiscardsLateVideoFrames = true
-
-      if self.captureSession.canAddOutput(output) {
-        self.captureSession.addOutput(output)
-      }
-
-      // Create preview layer with session on main thread
+      // Create preview layer and start session on main thread
       DispatchQueue.main.async {
-        let preview = AVCaptureVideoPreviewLayer(session: self.captureSession)
-        preview.videoGravity = .resizeAspectFill
-        preview.frame = self.bounds
-        self.layer.addSublayer(preview)
-        self.previewLayer = preview
-      }
+        if self.previewLayer == nil {
+          let preview = AVCaptureVideoPreviewLayer(session: self.captureSession)
+          preview.videoGravity = .resizeAspectFill
+          preview.frame = self.bounds
+          self.layer.addSublayer(preview)
+          self.previewLayer = preview
+        }
 
-      self.captureSession.startRunning()
+        // Start session AFTER preview layer is ready
+        self.sessionQueue.async {
+          if !self.captureSession.isRunning {
+            self.captureSession.startRunning()
+          }
+        }
+      }
     }
   }
 
