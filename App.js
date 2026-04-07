@@ -113,6 +113,13 @@ export default function App() {
           };
         }
 
+        // === QUEUE SCANNER: intercept queue scanner same way ===
+        if (window.openQueueScanner) {
+          window.openQueueScanner = function(rowId) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'OPEN_SCANNER', mode: 'queue', rowId: rowId }));
+          };
+        }
+
         // === SCAN RESULTS FROM NATIVE ===
         document.addEventListener('nativeScan', function(e) {
           if (window.processBarcode) window.processBarcode(e.detail);
