@@ -138,9 +138,11 @@ export default function NativeScanner({ onScan, onClose }) {
                 <MLKitScannerView
                   style={styles.camera}
                   barcodeTypes={[
-                    'ean13', 'ean8', 'upc_a', 'upc_e',
-                    'code128', 'code39', 'code93',
-                    'itf14', 'codabar', 'datamatrix', 'qr',
+                    // Solo los formatos que usa el retail: EAN-13 (cajas Nike/Adidas),
+                    // UPC-A (algunos productos US) y CODE128 (etiquetas internas).
+                    // Se removieron itf14/code39/code93/codabar/datamatrix/qr porque
+                    // causaban misreads de códigos EAN-13 en productos reales.
+                    'ean13', 'upc_a', 'code128',
                   ]}
                   onBarcodeScanned={canScan ? (event) => {
                     handleBarcodeScanned(event.nativeEvent);
@@ -151,10 +153,12 @@ export default function NativeScanner({ onScan, onClose }) {
                   style={styles.camera}
                   facing="back"
                   barcodeScannerSettings={{
+                    // Solo los formatos que usa el retail: EAN-13 (cajas Nike/Adidas),
+                    // UPC-A (algunos productos US) y CODE128 (etiquetas internas).
+                    // Se removieron itf14/code39/code93/codabar/datamatrix/qr porque
+                    // causaban misreads de códigos EAN-13 en productos reales (Android).
                     barcodeTypes: [
-                      'ean13', 'ean8', 'upc_a', 'upc_e',
-                      'code128', 'code39', 'code93',
-                      'itf14', 'codabar', 'datamatrix', 'qr',
+                      'ean13', 'upc_a', 'code128',
                     ],
                   }}
                   onBarcodeScanned={canScan ? handleBarcodeScanned : undefined}
