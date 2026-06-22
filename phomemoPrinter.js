@@ -98,11 +98,24 @@ async function sendBytes(data) {
     throw new Error('Impresora no conectada');
   }
 
+  // Use write-WITH-response when the characteristic supports it. This makes
+  // each chunk wait for the printer to acknowledge it before sending the
+  // next one — real backpressure. Without it, writeWithoutResponse dumps the
+  // whole label into the OS/printer buffer at once; after ~4 labels the
+  // buffer saturates and labels skew/merge/drop. Falls back to the old
+  // fire-and-forget path (with a manual delay) if ACK writes aren't allowed.
+  const useAck = writeCharacteristic.isWritableWithResponse === true;
+
   for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
     const chunk = data.slice(offset, offset + CHUNK_SIZE);
-    await writeCharacteristic.writeWithoutResponse(uint8ToBase64(chunk));
-    if (offset + CHUNK_SIZE < data.length) {
-      await delay(CHUNK_DELAY);
+    const b64 = uint8ToBase64(chunk);
+    if (useAck) {
+      await writeCharacteristic.writeWithResponse(b64);
+    } else {
+      await writeCharacteristic.writeWithoutResponse(b64);
+      if (offset + CHUNK_SIZE < data.length) {
+        await delay(CHUNK_DELAY);
+      }
     }
   }
 }

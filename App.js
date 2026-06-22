@@ -65,6 +65,22 @@ export default function App() {
         });
       }
 
+      // === DEPLOY VERIFICATION: visible build badge ===
+      // Shows on screen which version of the printer code is actually running,
+      // so we can confirm a new build is really installed (no more guessing).
+      window.__PRINTER_BUILD__ = 'IMPRESORA v2';
+      (function addBadge() {
+        if (!document.body) { setTimeout(addBadge, 300); return; }
+        if (document.getElementById('__hybridBadge__')) return;
+        var b = document.createElement('div');
+        b.id = '__hybridBadge__';
+        b.textContent = window.__PRINTER_BUILD__;
+        b.style.cssText = 'position:fixed;bottom:4px;right:4px;z-index:2147483647;'
+          + 'background:rgba(220,38,38,0.92);color:#fff;'
+          + 'font:700 10px sans-serif;padding:2px 6px;border-radius:6px;pointer-events:none;';
+        document.body.appendChild(b);
+      })();
+
       function setup() {
         if (!window.goToScreen) return;
         if (window.__HYBRID_SETUP_DONE__) return;
