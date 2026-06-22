@@ -382,6 +382,18 @@ async function print(imageData, density = 4) {
     await sendBytes(
       new Uint8Array([0x1f, 0xf0, 0x05, 0x00, 0x1f, 0xf0, 0x03, 0x00]),
     );
+
+    // 7. Wait for the label to PHYSICALLY print before returning. The BLE
+    //    write only confirms the printer *received* the data into its buffer,
+    //    not that it printed it. The printer accepts data far faster than it
+    //    prints; without this wait, all labels get pushed into the buffer
+    //    almost at once, the buffer (~3-4 labels) overflows, and output turns
+    //    to garbage from the 4th label on. printDone is dispatched only after
+    //    print() resolves, so this delay gates the next label in the PWA loop.
+    //    Scaled to label height (feed time); conservative on purpose — once
+    //    verified correct, the coefficient can be lowered to speed it up.
+    const physicalPrintMs = Math.max(1800, heightLines * 8);
+    await delay(physicalPrintMs);
   } catch (error) {
     throw new Error(`Error al imprimir: ${error.message}`);
   }
