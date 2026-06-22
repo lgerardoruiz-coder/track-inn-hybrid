@@ -335,12 +335,15 @@ async function print(imageData, density = 4) {
 
     // 1. Set speed
     await sendBytes(new Uint8Array([0x1b, 0x4e, 0x0d, 0x05]));
+    await delay(30);
 
     // 2. Set density
     await sendBytes(new Uint8Array([0x1b, 0x4e, 0x04, densityValue]));
+    await delay(30);
 
     // 3. Set media type (labels with gaps)
     await sendBytes(new Uint8Array([0x1f, 0x11, 0x0a]));
+    await delay(30);
 
     // 4. Raster header
     await sendBytes(
@@ -359,7 +362,10 @@ async function print(imageData, density = 4) {
     // 5. Send raster data
     await sendBytes(data);
 
-    // 6. Footer
+    // 6. Footer — wait for the print head to finish rendering the raster
+    //    before issuing the feed-to-gap command, otherwise consecutive
+    //    labels (5th onward) desync from the physical gap and skew.
+    await delay(300);
     await sendBytes(
       new Uint8Array([0x1f, 0xf0, 0x05, 0x00, 0x1f, 0xf0, 0x03, 0x00]),
     );
