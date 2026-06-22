@@ -30,6 +30,7 @@ let connectedDevice = null;
 let writeCharacteristic = null;
 let keepaliveTimer = null;
 let idleTimer = null;
+let isPrinting = false; // true mientras print() esta enviando datos a la impresora
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -71,7 +72,10 @@ function resetIdleTimer() {
 function startKeepalive() {
   stopKeepalive();
   keepaliveTimer = setInterval(() => {
-    if (connectedDevice && writeCharacteristic) {
+    // NUNCA mandar el ping mientras se imprime: si cae a la mitad del raster
+    // de una etiqueta, corrompe los datos y salen basura/etiquetas mal en
+    // lotes largos (>30s). Solo hace keepalive cuando la impresora esta ociosa.
+    if (connectedDevice && writeCharacteristic && !isPrinting) {
       const ping = new Uint8Array([0x1f, 0x11, 0x08]);
       writeCharacteristic
         .writeWithoutResponse(uint8ToBase64(ping))
@@ -340,6 +344,7 @@ async function print(imageData, density = 4) {
     throw new Error('Impresora no conectada');
   }
 
+  isPrinting = true; // suprime el keepalive mientras se envia el raster
   try {
     resetIdleTimer();
 
@@ -396,6 +401,8 @@ async function print(imageData, density = 4) {
     await delay(physicalPrintMs);
   } catch (error) {
     throw new Error(`Error al imprimir: ${error.message}`);
+  } finally {
+    isPrinting = false;
   }
 }
 
