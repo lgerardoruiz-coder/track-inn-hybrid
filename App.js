@@ -68,7 +68,7 @@ export default function App() {
       // === DEPLOY VERIFICATION: visible build badge ===
       // Shows on screen which version of the printer code is actually running,
       // so we can confirm a new build is really installed (no more guessing).
-      window.__PRINTER_BUILD__ = 'IMPRESORA v4';
+      window.__PRINTER_BUILD__ = 'IMPRESORA v5';
       (function addBadge() {
         if (!document.body) { setTimeout(addBadge, 300); return; }
         if (document.getElementById('__hybridBadge__')) return;

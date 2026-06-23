@@ -403,6 +403,14 @@ async function print(imageData, density = 4) {
     throw new Error(`Error al imprimir: ${error.message}`);
   } finally {
     isPrinting = false;
+    // Reinicia el temporizador del keepalive en cada impresion. Durante un lote
+    // (etiquetas cada pocos segundos) el timer se reinicia constantemente y NUNCA
+    // llega a los 30s, asi que el ping jamas se dispara entre etiquetas — donde
+    // antes caia en el hueco y recorria la siguiente (LIQUIDACION al otro lado).
+    // Solo hara keepalive tras 30s reales de inactividad.
+    if (connectedDevice && writeCharacteristic) {
+      startKeepalive();
+    }
   }
 }
 
