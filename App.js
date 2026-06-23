@@ -4,9 +4,25 @@ import { View, StyleSheet, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import NativeScanner from './NativeScanner';
 import * as Printer from './phomemoPrinter';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 // Cache-bust: append timestamp so WebView always fetches fresh HTML
 const TRACK_INN_URL = 'https://lgerardoruiz-coder.github.io/track-inn/?v=' + Date.now();
+
+// Mantener la pantalla encendida mientras se imprime. Si la pantalla se bloquea
+// a media impresion, Android estrangula la app y corta la transmision BLE -> esa
+// etiqueta sale corrupta. Se activa en cada etiqueta y se libera 60s despues de
+// la ultima (durante un lote nunca se apaga; al terminar, vuelve a la normalidad).
+const KEEP_AWAKE_TAG = 'trackinn-print';
+let keepAwakeReleaseTimer = null;
+function keepScreenAwakeForPrint() {
+  activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
+  if (keepAwakeReleaseTimer) clearTimeout(keepAwakeReleaseTimer);
+  keepAwakeReleaseTimer = setTimeout(() => {
+    deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => {});
+    keepAwakeReleaseTimer = null;
+  }, 60000);
+}
 
 export default function App() {
   const [showScanner, setShowScanner] = useState(false);
@@ -68,7 +84,7 @@ export default function App() {
       // === DEPLOY VERIFICATION: visible build badge ===
       // Shows on screen which version of the printer code is actually running,
       // so we can confirm a new build is really installed (no more guessing).
-      window.__PRINTER_BUILD__ = 'IMPRESORA v5';
+      window.__PRINTER_BUILD__ = 'IMPRESORA v6';
       (function addBadge() {
         if (!document.body) { setTimeout(addBadge, 300); return; }
         if (document.getElementById('__hybridBadge__')) return;
@@ -325,6 +341,7 @@ export default function App() {
 
       if (data.type === 'PRINTER_PRINT') {
         try {
+          keepScreenAwakeForPrint(); // evita que el bloqueo de pantalla corte la impresion
           updatePWAPrinterUI('printing', 'Imprimiendo...');
           const pixels = new Uint8Array(data.pixels);
           const raster = Printer.canvasToRaster(pixels, data.width, data.height);
